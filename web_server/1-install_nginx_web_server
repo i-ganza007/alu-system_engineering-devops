@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
-#Installing Nginx on Ubuntu
-#Nginx is listening on port 80
-#The GET request should return a page containing "Holberton School"
+# Commands to install Nginx on Web-Sever-01
 
-sudo apt-get update && upgrade
-sudo apt-get install nginx -y
+# Updating Packages before making Installations
+sudo apt-get update
+sudo apt-get -y install nginx
 
-#Create a directory called html inside your nginx server
-sudo mkdir /var/www/html
-#Create a file inside that directory called index.html
-sudo touch /var/www/html/index.html
-#Display your message then
-sudo echo "Holberton School" > /var/www/html/index.html
-sudo service nginx restart
+# Configuring the Uncomplicated Firewall (UFW) to allow incoming traffic for the Nginx HTTP service
+sudo ufw allow 'Nginx HTTP'
+
+# Creating an index.html page
+echo "Holberton School" | sudo tee /var/www/html/index.html
+
+# Testing Nginx configurations for Syntax errors
+sudo nginx -t
+
+# Restarting Nginx
+sudo service nginx start
