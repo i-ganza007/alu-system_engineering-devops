@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# script that installs Nginx and configures it to redirect to another page when
+# accessing the /redirect_me page.
+
+# Check if the script is run as root
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run this script with sudo or as root."
+    exit 1
+fi
+
+# Release package management locks
+sudo rm /var/cache/apt/archives/lock
+sudo apt update -y
+sudo apt install nginx -y
+
+# Create necessary directories
+sudo mkdir -p /etc/nginx/html
+
+# Create HTML files
+sudo touch /etc/nginx/html/index.html
+sudo touch /etc/nginx/html/404.html
+
+# Populate HTML files with content
+echo "Holberton School" | sudo tee /etc/nginx/html/index.html
+echo "Ceci n'est pas une page" | sudo tee /etc/nginx/html/404.html
+
+# Store Nginx configuration content in a variable
+new_config="
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    root /etc/nginx/html;
+    index index.html index.htm index.nginx-debian.html;
+    server_name _;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+
+    error_page 404 /404.html;
+    location /404 {
+        internal;
+    }
+}
+"
+
+# Write Nginx configuration to the default file
+echo "$new_config" | sudo tee /etc/nginx/sites-available/default
+
+# Restart Nginx
+sudo service nginx restart
